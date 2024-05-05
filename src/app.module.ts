@@ -11,16 +11,20 @@ import { UserModule } from './auth/user.module';
 import { HttpExceptionFilter } from './exception/http-exception.filter';
 import { APP_FILTER } from '@nestjs/core';
 import { File } from './file/entity/file.enity';
+import { DownloadTask } from './downloadTask/entity/downloadTask.entity';
+import { DownloadTaskModule } from './downloadTask/task.module';
+import { CategoryModule } from './category/category.module';
+import { Category } from './category/entity/category.entity';
 
 @Module({
-  imports: [MinioModule, KafkaModule, AuthModule,UserModule, TypeOrmModule.forRoot({
+  imports: [DownloadTaskModule,MinioModule, KafkaModule, AuthModule,UserModule,CategoryModule, TypeOrmModule.forRoot({
     type:'mysql',
     host:'localhost',
     port: 3306,
     username: 'root',
     password:'',
     database:'idm',
-    entities:[User,File],
+    entities:[User,File,DownloadTask, Category],
     migrations:[
       'src/migration/**/*.ts'
     ],

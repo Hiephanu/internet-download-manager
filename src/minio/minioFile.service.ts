@@ -1,11 +1,8 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { log } from "console";
 import * as Minio from 'minio'
 import { UserService } from "src/auth/user.service";
 import { File } from "src/file/entity/file.enity";
 import { FileService } from "src/file/file.service";
-import { KafkaProcedureService } from "src/kafka/kafkaProcedure.service";
-import { Readable } from 'stream';
 
 @Injectable()
 export class MinioFileService {
@@ -15,7 +12,7 @@ export class MinioFileService {
 
     private readonly BUCKET_NAME = "idm"
 
-    async uploadFile(file: Express.Multer.File,fileName : string, userId : number) {
+    async uploadFile(file: Express.Multer.File,fileName : string, userId : number, categoryId : number) {
         try {
             
             const fileBuffer = file.buffer
@@ -39,7 +36,7 @@ export class MinioFileService {
 
             this.fileService.saveFile(fileEntity)
 
-            const res = await this.minioClient.putObject(this.BUCKET_NAME, uniqueName,fileBuffer, file.size, metaData)
+            await this.minioClient.putObject(this.BUCKET_NAME, uniqueName,fileBuffer, file.size, metaData)
             
             return `File ${file.filename} uploaded success`
         } catch (err) {
@@ -48,41 +45,16 @@ export class MinioFileService {
             
         }
     }
+
     async downloadFile(bucketName : string , objectName : string) {
-        try {
-            const url = await this.minioClient.presignedGetObject(bucketName, objectName)
-            return url
-        } catch (err) {
-            console.log(err);
-            throw new Error()
-        }
+        return await this.minioClient.getObject(bucketName, objectName)
     }
-    async downloadFileStream() : Promise<{stream : Readable, progress: number}> {
-        try {
-            const stat = await this.minioClient.statObject(this.BUCKET_NAME, 'MUL_B02_Group4.pptx');
-            const totalSize = stat.size;
 
-            const stream = await this.minioClient.getObject(this.BUCKET_NAME, 'MUL_B02_Group4.pptx');
+    async continueDownloadFile(bucketName: string, objectName : string, startPosition : number, length :number) {
+        return await this.minioClient.getPartialObject(bucketName,objectName,startPosition,length);
+    }
 
-            let bytesDownloaded = 0;
-
-            const progressPromise = new Promise<{ stream: Readable, progress: number }>((resolve, reject) => {
-                stream.on('data', (chunk) => {
-                    bytesDownloaded += chunk.length;                 
-                    const progress = Math.round((bytesDownloaded / totalSize) * 100);
-                    console.log(progress);
-                    
-                    resolve({ stream, progress });
-                });
-
-                stream.on('error', (err) => {
-                    reject(err);
-                });
-            });
-            return progressPromise;
-        } catch (error) {
-            console.error(error);
-            throw new Error('Fail to get file stream from Minio');
-        }
+    async deleteObject(bucketName : string , objectName : string) {
+        return await this.minioClient.removeObject(bucketName,objectName)
     }
 }

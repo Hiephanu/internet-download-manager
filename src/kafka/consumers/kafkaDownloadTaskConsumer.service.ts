@@ -1,7 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Consumer, Kafka } from "kafkajs";
-import * as Minio from 'minio'
-import * as fs from 'fs'
 @Injectable()
 export class KafkaConsumerService {
     private readonly kafka : Kafka

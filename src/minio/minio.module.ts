@@ -7,9 +7,10 @@ import { UserService } from "src/auth/user.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/auth/entity/user.entity";
 import { File } from "src/file/entity/file.enity";
+import { MinioConfigModule } from "./minioConfig.module";
 
 @Module({
-    imports:[ TypeOrmModule.forFeature([User,File])],
+    imports:[ TypeOrmModule.forFeature([User,File]), MinioConfigModule],
     controllers:[MinioController],
     providers:[
         {
@@ -22,7 +23,7 @@ import { File } from "src/file/entity/file.enity";
                 secretKey: 'Kogf4cJvLgonCFINuBzfvsCaMTFwIy8IND0vwyrd'
             })
         },
-        MinioFileService,FileService,UserService
+        MinioFileService,FileService,UserService,Object
     ]
 })
 
