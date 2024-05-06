@@ -18,6 +18,7 @@ export class DownloadTaskService {
     async getTaskById(id :number) {
         return await this.downloadTaskRepository.findOneBy({id: id})
     }
+
     async initDownloadTask(downloadTaskReq : DownloadTaskReqDto){
         const downloadTask = new DownloadTask()
         downloadTask.file_id = downloadTaskReq.fileId
@@ -62,13 +63,13 @@ export class DownloadTaskService {
                 })
     
                 stream.on('end', ()=> {
+                    this.finishDownload(id)
                     console.log('end stream');
                 })
                 return {stream ,nameFile}
             } else {
                 throw  new NotFoundException('Can not find task!')
             }
-         
         } catch(err) {
             console.log(err)
             throw new InternalServerErrorException('Can not get stream file')
@@ -83,5 +84,17 @@ export class DownloadTaskService {
             stream.pause()
             this.downloadTaskRepository.save(downloadTask)
         }
+    }
+
+    async finishDownload(id : number){
+        const downloadTask = await this.downloadTaskRepository.findOneBy({id : id})
+        if(downloadTask) {
+            downloadTask.status = DownloadTaskStatus.FINISH
+        }
+    }
+
+    async getAllDownloadTaskByUserId(userId : number) {
+        const downloadTasks = await this.downloadTaskRepository.find({where : {user_id : userId ,status : DownloadTaskStatus.FINISH}})
+        return downloadTasks
     }
 }
