@@ -15,9 +15,11 @@ import { DownloadTask } from './downloadTask/entity/downloadTask.entity';
 import { DownloadTaskModule } from './downloadTask/task.module';
 import { CategoryModule } from './category/category.module';
 import { Category } from './category/entity/category.entity';
+import { ZipModule } from './zip/zip.module';
+import { ThumbnailsModule } from './thumbnail/thumbnails.module';
 
 @Module({
-  imports: [DownloadTaskModule,MinioModule, KafkaModule, AuthModule,UserModule,CategoryModule, TypeOrmModule.forRoot({
+  imports: [DownloadTaskModule,MinioModule, KafkaModule, AuthModule, UserModule, ZipModule, CategoryModule, ThumbnailsModule, TypeOrmModule.forRoot({
     type:'mysql',
     host:'localhost',
     port: 3306,

@@ -17,6 +17,9 @@ export class File {
     type : string
 
     @Column()
+    thumbnail : string
+
+    @Column()
     bucket : string
 
     @ManyToOne(type => User , user => user.files)
