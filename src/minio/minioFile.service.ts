@@ -1,20 +1,16 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import * as Minio from 'minio'
-import { UserService } from "src/auth/user.service";
-import { File } from "src/file/entity/file.enity";
 import { FileService } from "src/file/file.service";
 
 @Injectable()
 export class MinioFileService {
     constructor( @Inject('MinioClient') private readonly minioClient: Minio.Client,
-               private readonly fileService: FileService,
-                private readonly userService : UserService) {}
+               private readonly fileService: FileService) {}
 
     private readonly BUCKET_NAME = "idm"
 
-    async uploadFile(file: Express.Multer.File,fileName : string, userId : number, categoryId : number) {
+    async uploadFile(file: Express.Multer.File,fileName : string, userId : number) {
         try {
-            
             const fileBuffer = file.buffer
             const metaData  = {
                 'X-Amz-Meta-Author':userId ,
@@ -22,21 +18,8 @@ export class MinioFileService {
                 'X-Amz-Meta-Size': file.size.toString(),
                 'Content-Type': 'application/octet-stream', 
             }
-            const uniqueName = this.fileService.generateFileNameUnique(fileName)
 
-            const fileEntity = new File()
-
-            const user = await this.userService.findOne(userId)
-
-            fileEntity.name = uniqueName
-            fileEntity.size = file.size
-            fileEntity.type = file.mimetype
-            fileEntity.bucket = this.BUCKET_NAME
-            fileEntity.user = user
-
-            this.fileService.saveFile(fileEntity)
-
-            await this.minioClient.putObject(this.BUCKET_NAME, uniqueName,fileBuffer, file.size, metaData)
+            await this.minioClient.putObject(this.BUCKET_NAME,fileName,fileBuffer, file.size, metaData)
             
             return `File ${file.filename} uploaded success`
         } catch (err) {
